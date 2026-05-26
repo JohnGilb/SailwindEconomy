@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Economy Revamp</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f6f8;
+      --surface: #ffffff;
+      --surface-2: #eef2f5;
+      --ink: #18212b;
+      --muted: #65717f;
+      --line: #d6dde5;
+      --teal: #137f78;
+      --coral: #c75146;
+      --gold: #a67818;
+      --indigo: #3d5a9c;
+      --green: #357a38;
+      --shadow: 0 12px 28px rgba(17, 28, 39, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      border-radius: 6px;
+      min-height: 34px;
+      padding: 0 10px;
+      cursor: pointer;
+    }
+
+    button.active {
+      border-color: var(--teal);
+      background: #e5f3f1;
+      color: #075d58;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 6px 9px;
+      background: var(--surface);
+      color: var(--ink);
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 18px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.92);
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      backdrop-filter: blur(10px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 220px;
+    }
+
+    .mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(19, 127, 120, 0.16), rgba(61, 90, 156, 0.14)),
+        var(--surface);
+      border: 1px solid var(--line);
+      font-weight: 800;
+      color: var(--teal);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.1;
+    }
+
+    .subtle {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(180px, 320px) 120px 120px auto;
+      gap: 8px;
+      align-items: center;
+      justify-content: end;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--coral);
+      box-shadow: 0 0 0 3px rgba(199, 81, 70, 0.14);
+    }
+
+    .dot.ok {
+      background: var(--green);
+      box-shadow: 0 0 0 3px rgba(53, 122, 56, 0.15);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 286px minmax(0, 1fr);
+      min-height: 0;
+    }
+
+    aside {
+      border-right: 1px solid var(--line);
+      background: #fafbfc;
+      min-height: calc(100vh - 64px);
+      padding: 12px;
+      overflow: auto;
+    }
+
+    .port-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .port-button {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      min-height: 46px;
+      text-align: left;
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+
+    .port-badges {
+      display: grid;
+      gap: 4px;
+      justify-items: end;
+    }
+
+    .port-button.active {
+      background: #e5f3f1;
+      border-color: #9ecbc7;
+    }
+
+    .port-name {
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    main {
+      padding: 18px;
+      overflow: auto;
+      min-width: 0;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      min-height: 76px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-top: 6px;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 14px;
+    }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 14px;
+      padding: 14px;
+    }
+
+    .chart-box {
+      min-height: 260px;
+      display: grid;
+      grid-template-rows: auto 220px;
+      gap: 8px;
+    }
+
+    .chart-title {
+      font-weight: 700;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 220px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfd;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: calc(100vh - 250px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 820px;
+    }
+
+    th,
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #f8fafb;
+      z-index: 1;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+    }
+
+    tr:hover td {
+      background: #fbfcfd;
+    }
+
+    .positive {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .negative {
+      color: var(--coral);
+      font-weight: 700;
+    }
+
+    .raw {
+      margin: 0;
+      padding: 14px;
+      max-height: calc(100vh - 230px);
+      overflow: auto;
+      background: #111820;
+      color: #d7e2ec;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .empty {
+      padding: 28px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(150px, 1fr));
+      gap: 8px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+
+    @media (max-width: 980px) {
+      .topbar,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr 1fr;
+        justify-content: stretch;
+      }
+
+      aside {
+        min-height: 0;
+        max-height: 280px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .stats,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark">ER</div>
+        <div>
+          <h1>Economy Revamp</h1>
+          <div class="subtle" id="snapshotTime">No snapshot</div>
+        </div>
+      </div>
+      <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">Disconnected</span></div>
+      <div class="toolbar">
+        <input id="apiUrl" value="http://127.0.0.1:17777/api/economy" aria-label="API URL">
+        <button id="refreshButton" title="Refresh now">Refresh</button>
+        <button id="autoButton" class="active" title="Toggle auto refresh">Auto</button>
+        <input id="searchBox" placeholder="Filter goods or ports" aria-label="Filter goods or ports">
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside>
+        <div class="port-list" id="portList"></div>
+      </aside>
+
+      <main>
+        <div class="stats" id="stats"></div>
+        <div class="tabs" id="tabs"></div>
+        <section class="section" id="content"></section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      data: null,
+      selectedPortIndex: null,
+      tab: 'overview',
+      search: '',
+      auto: true,
+      timer: null,
+      renderTimer: null,
+      sortKey: 'currentSupply',
+      sortDir: -1
+    };
+
+    const tabs = [
+      ['overview', 'Overview'],
+      ['goods', 'Goods'],
+      ['world', 'World'],
+      ['timing', 'Timing'],
+      ['warehouse', 'Warehouse'],
+      ['routes', 'Routes'],
+      ['raw', 'Raw']
+    ];
+
+    const colors = ['#137f78', '#c75146', '#a67818', '#3d5a9c', '#357a38', '#7a5195'];
+
+    document.getElementById('refreshButton').addEventListener('click', fetchEconomy);
+    document.getElementById('autoButton').addEventListener('click', () => {
+      state.auto = !state.auto;
+      document.getElementById('autoButton').classList.toggle('active', state.auto);
+      schedule();
+    });
+    document.getElementById('searchBox').addEventListener('input', event => {
+      state.search = event.target.value.trim().toLowerCase();
+      render();
+    });
+
+    fetchEconomy();
+    schedule();
+    state.renderTimer = setInterval(() => {
+      if (state.data) render();
+    }, 1000);
+
+    function schedule() {
+      if (state.timer) clearInterval(state.timer);
+      if (state.auto) state.timer = setInterval(fetchEconomy, 3000);
+    }
+
+    async function fetchEconomy() {
+      const url = document.getElementById('apiUrl').value.trim();
+      try {
+        const response = await fetch(url, { cache: 'no-store' });
+        if (!response.ok) throw new Error(response.status + ' ' + response.statusText);
+        state.data = await response.json();
+        if (state.selectedPortIndex === null && state.data.markets && state.data.markets.length) {
+          state.selectedPortIndex = state.data.markets[0].portIndex;
+        }
+        setStatus(true, state.data.status || 'ok');
+        render();
+      } catch (error) {
+        setStatus(false, error.message);
+      }
+    }
+
+    function setStatus(ok, text) {
+      document.getElementById('statusDot').classList.toggle('ok', ok);
+      document.getElementById('statusText').textContent = ok ? text : 'Disconnected: ' + text;
+    }
+
+    function render() {
+      renderSnapshotTime();
+      renderPorts();
+      renderStats();
+      renderTabs();
+      renderContent();
+    }
+
+    function renderSnapshotTime() {
+      const el = document.getElementById('snapshotTime');
+      if (!state.data || !state.data.generatedAtUtc) {
+        el.textContent = 'No snapshot';
+        return;
+      }
+      el.textContent = 'Day ' + (state.data.gameDay || 0) + ' - ' + new Date(state.data.generatedAtUtc).toLocaleTimeString();
+    }
+
+    function renderPorts() {
+      const list = document.getElementById('portList');
+      const markets = filteredPorts();
+      list.innerHTML = markets.map(port => {
+        const active = port.portIndex === state.selectedPortIndex ? ' active' : '';
+        const goods = (port.goods || []).filter(g => g.hasGood).length;
+        const countdown = currentCycleCountdown(port);
+        return `<button class="port-button${active}" data-port="${port.portIndex}">
+          <span><span class="port-name">${escapeHtml(port.portName || port.objectName)}</span><span class="subtle">${escapeHtml(port.region || '')}</span></span>
+          <span class="port-badges"><span class="badge">${goods}</span><span class="badge">${formatDuration(countdown.gameSeconds)} ig</span></span>
+        </button>`;
+      }).join('');
+      list.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', () => {
+          state.selectedPortIndex = Number(button.dataset.port);
+          render();
+        });
+      });
+    }
+
+    function renderStats() {
+      const stats = document.getElementById('stats');
+      const data = state.data || {};
+      const markets = data.markets || [];
+      const goodsRows = markets.flatMap(m => m.goods || []);
+      const stocked = goodsRows.filter(g => g.hasGood).length;
+      const supply = sum(goodsRows, g => g.currentSupply);
+      const production = sum(goodsRows, g => Math.max(0, g.production));
+      const softCap = data.debugMarketTracker ? data.debugMarketTracker.goodsAmountSoftCap : 0;
+      const clock = data.clock || {};
+      stats.innerHTML = [
+        stat('Ports', markets.length),
+        stat('Stocked rows', stocked),
+        stat('World supply', fmt(supply)),
+        stat('Soft cap', fmt(softCap)),
+        stat('Production', fmt(production)),
+        stat('Market speed', fmt(clock.marketSpeedMult ?? (data.debugMarketTracker && data.debugMarketTracker.marketSpeedMult))),
+        stat('Sun timescale', fmt(clock.sunTimescale)),
+        stat('Typical cycle', formatDuration(clock.typicalCycleGameSeconds || 0) + ' ig')
+      ].join('');
+    }
+
+    function stat(label, value) {
+      return `<div class="stat"><div class="subtle">${label}</div><div class="stat-value">${value}</div></div>`;
+    }
+
+    function renderTabs() {
+      const tabRoot = document.getElementById('tabs');
+      tabRoot.innerHTML = tabs.map(([key, label]) => `<button class="${state.tab === key ? 'active' : ''}" data-tab="${key}">${label}</button>`).join('');
+      tabRoot.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', () => {
+          state.tab = button.dataset.tab;
+          render();
+        });
+      });
+    }
+
+    function renderContent() {
+      const content = document.getElementById('content');
+      const port = selectedPort();
+      if (!state.data) {
+        content.innerHTML = '<div class="empty">Waiting for economy data.</div>';
+        return;
+      }
+      if (!port && state.tab !== 'routes' && state.tab !== 'raw') {
+        content.innerHTML = '<div class="empty">No port selected.</div>';
+        return;
+      }
+      if (state.tab === 'overview') renderOverview(content, port);
+      if (state.tab === 'goods') renderGoods(content, port);
+      if (state.tab === 'world') renderWorld(content);
+      if (state.tab === 'timing') renderTiming(content);
+      if (state.tab === 'warehouse') renderWarehouse(content, port);
+      if (state.tab === 'routes') renderRoutes(content);
+      if (state.tab === 'raw') renderRaw(content);
+    }
+
+    function renderOverview(content, port) {
+      const countdown = currentCycleCountdown(port);
+      content.innerHTML = `
+        <div class="section-head">
+          <div class="section-title">${escapeHtml(port.portName || port.objectName)}</div>
+          <span class="badge">${escapeHtml(port.region || '')}</span>
+        </div>
+        <div class="control-row">
+          <div><span class="subtle">Next cycle</span><div class="stat-value">${formatDuration(countdown.gameSeconds)} ig</div></div>
+          <div><span class="subtle">Real-time estimate</span><div class="stat-value">${formatDuration(countdown.realSeconds)}</div></div>
+          <div><span class="subtle">Cycle progress</span><div class="stat-value">${pct(port.cycleProgress || 0)}</div></div>
+        </div>
+        <div class="grid-2">
+          <div class="chart-box"><div class="chart-title">Supply by good</div><canvas id="supplyChart" width="720" height="360"></canvas></div>
+          <div class="chart-box"><div class="chart-title">Price spread by good</div><canvas id="priceChart" width="720" height="360"></canvas></div>
+        </div>`;
+      drawBarChart('supplyChart', topGoods(port.goods || [], 'currentSupply', 12), g => g.name, g => g.currentSupply, '#137f78');
+      drawBarChart('priceChart', topGoods((port.goods || []).filter(g => g.buyPrice > 0), 'buyPrice', 12), g => g.name, g => g.buyPrice - g.sellPrice, '#c75146');
+    }
+
+    function renderGoods(content, port) {
+      const rows = filteredGoods(port.goods || []);
+      content.innerHTML = `
+        <div class="section-head">
+          <div class="section-title">${escapeHtml(port.portName || port.objectName)} goods</div>
+          <span class="badge">${rows.length}</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              ${head('name', 'Good')}
+              ${head('currentSupply', 'Supply')}
+              ${head('production', 'Prod')}
+              ${head('basePrice', 'Base')}
+              ${head('buyPrice', 'Buy')}
+              ${head('sellPrice', 'Sell')}
+              ${head('value', 'Value')}
+              ${head('mass', 'Mass')}
+              ${head('hasGood', 'Stock')}
+            </tr></thead>
+            <tbody>${rows.map(goodRow).join('')}</tbody>
+          </table>
+        </div>`;
+      content.querySelectorAll('th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+          const key = th.dataset.sort;
+          state.sortDir = state.sortKey === key ? state.sortDir * -1 : -1;
+          state.sortKey = key;
+          render();
+        });
+      });
+    }
+
+    function renderWorld(content) {
+      const rows = filteredWorldGoods();
+      const positiveCount = rows.filter(r => r.netRawProduction > 0).length;
+      const negativeCount = rows.filter(r => r.netRawProduction < 0).length;
+      const flatCount = rows.length - positiveCount - negativeCount;
+      content.innerHTML = `
+        <div class="section-head">
+          <div class="section-title">World economy by good</div>
+          <span class="badge">${rows.length}</span>
+        </div>
+        <div class="control-row">
+          <div><span class="subtle">Positive raw trend</span><div class="stat-value">${positiveCount}</div></div>
+          <div><span class="subtle">Negative raw trend</span><div class="stat-value">${negativeCount}</div></div>
+          <div><span class="subtle">Flat raw trend</span><div class="stat-value">${flatCount}</div></div>
+        </div>
+        <div class="grid-2">
+          <div class="chart-box"><div class="chart-title">Largest raw net trends</div><canvas id="worldRawChart" width="720" height="360"></canvas></div>
+          <div class="chart-box"><div class="chart-title">Largest current expected cycle deltas</div><canvas id="worldExpectedChart" width="720" height="360"></canvas></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Good</th>
+              <th>Supply</th>
+              <th>Production</th>
+              <th>Consumption</th>
+              <th>Net raw</th>
+              <th>Expected cycle</th>
+              <th>Producers</th>
+              <th>Consumers</th>
+              <th>Avg cap</th>
+            </tr></thead>
+            <tbody>${rows.map(worldRow).join('')}</tbody>
+          </table>
+        </div>`;
+      drawDivergingBarChart('worldRawChart', topByAbs(rows, 'netRawProduction', 12), r => r.name, r => r.netRawProduction);
+      drawDivergingBarChart('worldExpectedChart', topByAbs(rows, 'expectedCycleDelta', 12), r => r.name, r => r.expectedCycleDelta);
+    }
+
+    function renderTiming(content) {
+      const rows = filteredTimingRows();
+      const clock = state.data.clock || {};
+      content.innerHTML = `
+        <div class="section-head">
+          <div class="section-title">Market cycle timing</div>
+          <span class="badge">${rows.length}</span>
+        </div>
+        <div class="control-row">
+          <div><span class="subtle">Market speed</span><div class="stat-value">${fmt(clock.marketSpeedMult)}</div></div>
+          <div><span class="subtle">Sun timescale</span><div class="stat-value">${fmt(clock.sunTimescale)}</div></div>
+          <div><span class="subtle">Typical cycle</span><div class="stat-value">${formatDuration(clock.typicalCycleGameSeconds || 0)} ig</div></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Island</th>
+              <th>Region</th>
+              <th>Next cycle</th>
+              <th>Real estimate</th>
+              <th>Progress</th>
+              <th>Timer</th>
+              <th>Reset</th>
+              <th>Duration</th>
+            </tr></thead>
+            <tbody>${rows.map(timingRow).join('')}</tbody>
+          </table>
+        </div>`;
+    }
+
+    function renderWarehouse(content, port) {
+      const warehouse = port.warehouse || { counts: [], slots: [] };
+      content.innerHTML = `
+        <div class="section-head">
+          <div class="section-title">${escapeHtml(port.portName || port.objectName)} warehouse</div>
+          <span class="badge">${warehouse.capacity || 0} slots</span>
+        </div>
+        <div class="grid-2">
+          <div class="chart-box"><div class="chart-title">Warehouse composition</div><canvas id="warehouseChart" width="720" height="360"></canvas></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Good</th><th>Index</th><th>Count</th></tr></thead>
+              <tbody>${(warehouse.counts || []).filter(c => c.goodIndex !== 0).map(c => `<tr><td>${escapeHtml(c.name)}</td><td>${c.goodIndex}</td><td>${c.count}</td></tr>`).join('')}</tbody>
+            </table>
+          </div>
+        </div>`;
+      drawBarChart('warehouseChart', (warehouse.counts || []).filter(c => c.goodIndex !== 0), c => c.name, c => c.count, '#a67818');
+    }
+
+    function renderRoutes(content) {
+      const data = routeOpportunities();
+      content.innerHTML = `
+        <div class="section-head">
+          <div class="section-title">Trade opportunities</div>
+          <span class="badge">${data.length}</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Good</th><th>Origin</th><th>Destination</th><th>Buy</th><th>Sell</th><th>Profit</th><th>Margin</th></tr></thead>
+            <tbody>${data.slice(0, 250).map(routeRow).join('')}</tbody>
+          </table>
+        </div>`;
+    }
+
+    function renderRaw(content) {
+      content.innerHTML = `<pre class="raw">${escapeHtml(JSON.stringify(state.data, null, 2))}</pre>`;
+    }
+
+    function head(key, label) {
+      const arrow = state.sortKey === key ? (state.sortDir > 0 ? ' ^' : ' v') : '';
+      return `<th data-sort="${key}">${label}${arrow}</th>`;
+    }
+
+    function goodRow(g) {
+      return `<tr>
+        <td>${escapeHtml(g.name)}</td>
+        <td>${fmt(g.currentSupply)}</td>
+        <td class="${g.production > 0 ? 'positive' : ''}">${fmt(g.production)}</td>
+        <td>${money(g.basePrice)}</td>
+        <td>${money(g.buyPrice)}</td>
+        <td>${money(g.sellPrice)}</td>
+        <td>${money(g.value)}</td>
+        <td>${fmt(g.mass)}</td>
+        <td>${g.hasGood ? 'yes' : 'no'}</td>
+      </tr>`;
+    }
+
+    function routeRow(r) {
+      return `<tr>
+        <td>${escapeHtml(r.good)}</td>
+        <td>${escapeHtml(r.origin)}</td>
+        <td>${escapeHtml(r.destination)}</td>
+        <td>${money(r.buy)}</td>
+        <td>${money(r.sell)}</td>
+        <td class="${r.profit >= 0 ? 'positive' : 'negative'}">${money(r.profit)}</td>
+        <td>${pct(r.margin)}</td>
+      </tr>`;
+    }
+
+    function worldRow(row) {
+      const trendClass = row.netRawProduction > 0 ? 'positive' : row.netRawProduction < 0 ? 'negative' : '';
+      const expectedClass = row.expectedCycleDelta > 0 ? 'positive' : row.expectedCycleDelta < 0 ? 'negative' : '';
+      return `<tr>
+        <td>${escapeHtml(row.name)}</td>
+        <td>${fmt(row.currentSupply)}</td>
+        <td class="positive">${fmt(row.totalProduction)}</td>
+        <td class="negative">${fmt(row.totalConsumption)}</td>
+        <td class="${trendClass}">${fmt(row.netRawProduction)}</td>
+        <td class="${expectedClass}">${fmt(row.expectedCycleDelta)}</td>
+        <td>${row.producerCount}</td>
+        <td>${row.consumerCount}</td>
+        <td>${fmt(row.averageCapFactor)}</td>
+      </tr>`;
+    }
+
+    function timingRow(port) {
+      const countdown = currentCycleCountdown(port);
+      return `<tr>
+        <td>${escapeHtml(port.portName || port.objectName)}</td>
+        <td>${escapeHtml(port.region || '')}</td>
+        <td>${formatDuration(countdown.gameSeconds)} ig</td>
+        <td>${formatDuration(countdown.realSeconds)}</td>
+        <td>${pct(currentCycleProgress(port))}</td>
+        <td>${fmt(currentTimerUnits(port))}</td>
+        <td>${fmt(port.econTimerResetValue)}</td>
+        <td>${fmt(port.econCycleDuration)}</td>
+      </tr>`;
+    }
+
+    function filteredPorts() {
+      const markets = (state.data && state.data.markets) || [];
+      if (!state.search) return markets;
+      return markets.filter(port => {
+        const portHit = (port.portName || port.objectName || '').toLowerCase().includes(state.search);
+        const goodHit = (port.goods || []).some(g => (g.name || '').toLowerCase().includes(state.search));
+        return portHit || goodHit;
+      });
+    }
+
+    function filteredGoods(goods) {
+      const rows = goods
+        .filter(g => !state.search || (g.name || '').toLowerCase().includes(state.search))
+        .slice();
+      rows.sort((a, b) => compare(a[state.sortKey], b[state.sortKey]) * state.sortDir);
+      return rows;
+    }
+
+    function selectedPort() {
+      const markets = (state.data && state.data.markets) || [];
+      return markets.find(m => m.portIndex === state.selectedPortIndex) || markets[0];
+    }
+
+    function filteredTimingRows() {
+      const markets = ((state.data && state.data.markets) || []).slice();
+      const rows = markets.filter(port => !state.search || (port.portName || port.objectName || '').toLowerCase().includes(state.search));
+      rows.sort((a, b) => currentTimerUnits(a) - currentTimerUnits(b));
+      return rows;
+    }
+
+    function routeOpportunities() {
+      const markets = (state.data && state.data.markets) || [];
+      const rows = [];
+      for (const origin of markets) {
+        for (const good of origin.goods || []) {
+          if (!good.hasGood || good.buyPrice <= 0) continue;
+          for (const destination of markets) {
+            if (destination.portIndex === origin.portIndex) continue;
+            const target = (destination.goods || []).find(g => g.goodIndex === good.goodIndex);
+            if (!target || target.sellPrice <= 0) continue;
+            const profit = target.sellPrice - good.buyPrice;
+            rows.push({
+              good: good.name,
+              origin: origin.portName || origin.objectName,
+              destination: destination.portName || destination.objectName,
+              buy: good.buyPrice,
+              sell: target.sellPrice,
+              profit,
+              margin: good.buyPrice ? profit / good.buyPrice : 0
+            });
+          }
+        }
+      }
+      rows.sort((a, b) => b.profit - a.profit);
+      return rows;
+    }
+
+    function filteredWorldGoods() {
+      const rows = worldGoods();
+      return rows.filter(row => !state.search || row.name.toLowerCase().includes(state.search));
+    }
+
+    function worldGoods() {
+      const markets = (state.data && state.data.markets) || [];
+      const byGood = new Map();
+      for (const market of markets) {
+        for (const good of market.goods || []) {
+          if (!byGood.has(good.goodIndex)) {
+            byGood.set(good.goodIndex, {
+              goodIndex: good.goodIndex,
+              name: good.name || ('Good ' + good.goodIndex),
+              currentSupply: 0,
+              totalProduction: 0,
+              totalConsumption: 0,
+              netRawProduction: 0,
+              expectedCycleDelta: 0,
+              capFactorTotal: 0,
+              capFactorCount: 0,
+              producerCount: 0,
+              consumerCount: 0
+            });
+          }
+          const row = byGood.get(good.goodIndex);
+          const production = Number(good.production) || 0;
+          row.currentSupply += Number(good.currentSupply) || 0;
+          if (production > 0) {
+            row.totalProduction += production;
+            row.producerCount += 1;
+          } else if (production < 0) {
+            row.totalConsumption += Math.abs(production);
+            row.consumerCount += 1;
+          }
+          row.netRawProduction += production;
+          row.expectedCycleDelta += Number(good.expectedCycleDelta) || 0;
+          row.capFactorTotal += Number(good.cycleCapFactor) || 0;
+          row.capFactorCount += 1;
+        }
+      }
+      return Array.from(byGood.values())
+        .filter(row => row.goodIndex !== 0 && (row.totalProduction || row.totalConsumption || Math.abs(row.currentSupply) > 0.001))
+        .map(row => {
+          row.averageCapFactor = row.capFactorCount ? row.capFactorTotal / row.capFactorCount : 0;
+          return row;
+        })
+        .sort((a, b) => Math.abs(b.netRawProduction) - Math.abs(a.netRawProduction));
+    }
+
+    function topGoods(goods, key, count) {
+      return goods.filter(g => Math.abs(Number(g[key]) || 0) > 0)
+        .slice()
+        .sort((a, b) => Math.abs(b[key]) - Math.abs(a[key]))
+        .slice(0, count);
+    }
+
+    function topByAbs(rows, key, count) {
+      return rows.slice().sort((a, b) => Math.abs(b[key]) - Math.abs(a[key])).slice(0, count);
+    }
+
+    function currentCycleCountdown(port) {
+      const units = currentTimerUnits(port);
+      const clock = (state.data && state.data.clock) || {};
+      const sunTimescale = Number(clock.sunTimescale) || 0;
+      return {
+        timerUnits: units,
+        gameSeconds: units / 100 * 3600,
+        realSeconds: sunTimescale > 0 ? units / (sunTimescale * 100) : NaN
+      };
+    }
+
+    function currentCycleProgress(port) {
+      const reset = Number(port.econTimerResetValue) || 0;
+      if (reset <= 0) return Number(port.cycleProgress) || 0;
+      return Math.max(0, Math.min(1, 1 - currentTimerUnits(port) / reset));
+    }
+
+    function currentTimerUnits(port) {
+      const base = Number(port.econTimer);
+      if (!Number.isFinite(base)) return 0;
+      const reset = Number(port.econTimerResetValue) || 0;
+      const clock = (state.data && state.data.clock) || {};
+      const elapsedRealSeconds = state.data.generatedAtUtc ? Math.max(0, (Date.now() - Date.parse(state.data.generatedAtUtc)) / 1000) : 0;
+      const scale = Number(clock.marketTimerScalePerRealSecond) || 0;
+      let remaining = base - elapsedRealSeconds * scale;
+      if (reset > 0) {
+        remaining = ((remaining % reset) + reset) % reset;
+      }
+      return Math.max(0, remaining);
+    }
+
+    function drawBarChart(id, rows, labelFn, valueFn, color) {
+      const canvas = document.getElementById(id);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#fbfcfd';
+      ctx.fillRect(0, 0, width, height);
+      if (!rows.length) {
+        ctx.fillStyle = '#65717f';
+        ctx.font = '16px Segoe UI, sans-serif';
+        ctx.fillText('No data', 28, 42);
+        return;
+      }
+      const values = rows.map(valueFn);
+      const max = Math.max(...values.map(v => Math.abs(v)), 1);
+      const left = 140;
+      const top = 16;
+      const barH = Math.max(12, Math.floor((height - top * 2) / rows.length) - 6);
+      ctx.font = '13px Segoe UI, sans-serif';
+      rows.forEach((row, i) => {
+        const y = top + i * (barH + 6);
+        const value = valueFn(row);
+        const length = Math.round((width - left - 76) * Math.abs(value) / max);
+        ctx.fillStyle = '#65717f';
+        ctx.fillText(truncate(labelFn(row), 18), 12, y + barH - 2);
+        ctx.fillStyle = color || colors[i % colors.length];
+        ctx.fillRect(left, y, length, barH);
+        ctx.fillStyle = '#18212b';
+        ctx.fillText(fmt(value), left + length + 8, y + barH - 2);
+      });
+    }
+
+    function drawDivergingBarChart(id, rows, labelFn, valueFn) {
+      const canvas = document.getElementById(id);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#fbfcfd';
+      ctx.fillRect(0, 0, width, height);
+      if (!rows.length) {
+        ctx.fillStyle = '#65717f';
+        ctx.font = '16px Segoe UI, sans-serif';
+        ctx.fillText('No data', 28, 42);
+        return;
+      }
+      const values = rows.map(valueFn);
+      const max = Math.max(...values.map(v => Math.abs(v)), 1);
+      const labelWidth = 138;
+      const center = Math.round(labelWidth + (width - labelWidth - 76) / 2);
+      const barMax = center - labelWidth - 10;
+      const top = 16;
+      const barH = Math.max(12, Math.floor((height - top * 2) / rows.length) - 6);
+      ctx.strokeStyle = '#d6dde5';
+      ctx.beginPath();
+      ctx.moveTo(center, 8);
+      ctx.lineTo(center, height - 8);
+      ctx.stroke();
+      ctx.font = '13px Segoe UI, sans-serif';
+      rows.forEach((row, i) => {
+        const y = top + i * (barH + 6);
+        const value = valueFn(row);
+        const length = Math.round(barMax * Math.abs(value) / max);
+        ctx.fillStyle = '#65717f';
+        ctx.fillText(truncate(labelFn(row), 18), 12, y + barH - 2);
+        ctx.fillStyle = value >= 0 ? '#357a38' : '#c75146';
+        const x = value >= 0 ? center : center - length;
+        ctx.fillRect(x, y, length, barH);
+        ctx.fillStyle = '#18212b';
+        ctx.fillText(fmt(value), value >= 0 ? center + length + 8 : Math.max(labelWidth, center - length - 64), y + barH - 2);
+      });
+    }
+
+    function compare(a, b) {
+      if (typeof a === 'string' || typeof b === 'string') return String(a || '').localeCompare(String(b || ''));
+      return (Number(a) || 0) - (Number(b) || 0);
+    }
+
+    function sum(rows, fn) {
+      return (rows || []).reduce((total, row) => total + (Number(fn(row)) || 0), 0);
+    }
+
+    function fmt(value) {
+      const n = Number(value) || 0;
+      return Math.abs(n) >= 1000 ? n.toLocaleString(undefined, { maximumFractionDigits: 0 }) : n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    }
+
+    function money(value) {
+      return (Number(value) || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+    }
+
+    function pct(value) {
+      const n = Number(value) || 0;
+      return (n * 100).toLocaleString(undefined, { maximumFractionDigits: 2 }) + '%';
+    }
+
+    function formatDuration(seconds) {
+      const n = Number(seconds);
+      if (!Number.isFinite(n)) return 'n/a';
+      if (n < 1) return n.toLocaleString(undefined, { maximumFractionDigits: 1 }) + 's';
+      if (n < 60) return n.toLocaleString(undefined, { maximumFractionDigits: 0 }) + 's';
+      const minutes = Math.floor(n / 60);
+      const remainder = Math.floor(n % 60);
+      if (minutes < 60) return minutes + 'm ' + remainder + 's';
+      const hours = Math.floor(minutes / 60);
+      const minuteRemainder = minutes % 60;
+      return hours + 'h ' + minuteRemainder + 'm';
+    }
+
+    function truncate(text, length) {
+      text = String(text || '');
+      return text.length > length ? text.slice(0, length - 1) + '.' : text;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[c]));
+    }
+  </script>
+</body>
+</html>

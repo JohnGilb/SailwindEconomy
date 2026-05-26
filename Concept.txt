@@ -1,0 +1,22 @@
+In the base Sailwind game, trade is quite simple on a number of dimensions:
+
+1) Any good can be sold to any port
+2) When purchasing a good, you can see the price it will likely sell for at nearly every port in the game
+3) The player's ability to move goods far surpasses the throughput of the NPCs to move goods
+
+This means that the player's decision making is quite limited:
+1) When you arrive at a port, you can check every good it has available, and also check what they will sell for.
+2) You pick the best one, load your ship, and go to the port where it will sell for the most.
+
+I'd like to change up these assumptions and create a more interesting and dynamic trade system.
+
+New Trade Principles:
+Unique Locations: Ports have specific "types" and "development levels" that influence what goods they consume and produce
+Fog of Trade: Players have no explicit knowledge of how much a good will be valued until they visit the location (or gain information about that location via some other means)
+The World Spins On: NPC traders represent the bulk of the economy, with the player having to work harder to find an edge.
+
+Now let's go into more detail on each of these high-level principles:
+
+## Unique Locations
+
+
